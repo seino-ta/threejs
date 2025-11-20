@@ -71,3 +71,7 @@ export default defineConfig([
   },
 ])
 ```
+
+## Deploy and build
+- pnpm run build
+- pnpm run deploy
