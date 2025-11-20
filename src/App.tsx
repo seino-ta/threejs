@@ -1,6 +1,6 @@
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, Edges } from "@react-three/drei";
-import React, { useMemo, useState, useRef } from "react";
+import { useMemo, useState, useRef } from "react";
 import * as THREE from "three";
 
 type ShapeKind = "box" | "tri" | "penta" | "hexa";
