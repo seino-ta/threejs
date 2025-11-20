@@ -25,12 +25,13 @@ function randomColor() {
   return `hsl(${h}, ${s}%, ${l}%)`;
 }
 
-// ランダムな回転ベクトルを作る
+// ランダムな回転ベクトルを作る（最高速度もここで決まる）
 function randomRotationVector(): [number, number, number] {
+  const max = 0.002; // ここをいじると最高速度が変わる
   return [
-    (Math.random() - 0.5) * 0.005, // x
-    (Math.random() - 0.5) * 0.005, // y
-    (Math.random() - 0.5) * 0.005, // z
+    (Math.random() - 0.5) * max, // x
+    (Math.random() - 0.5) * max, // y
+    (Math.random() - 0.5) * max, // z
   ];
 }
 
@@ -52,7 +53,7 @@ function createRandomShapeConfig(id: number): ShapeConfig {
 
   const size = 0.5 + Math.random() * 2.5;
   const color = randomColor();
-  const lineWidth = 2 + Math.random() * 3; // 2〜5くらい
+  const lineWidth = 3
 
   return { id, kind, position, rotation, size, color, lineWidth };
 }
@@ -61,6 +62,7 @@ function createRandomShapeConfig(id: number): ShapeConfig {
 function RandomShape({ config }: { config: ShapeConfig }) {
   const { kind, position, rotation, size, color, lineWidth } = config;
 
+  // 四角形 → 正方形の立方体
   if (kind === "box") {
     return (
       <mesh position={position} rotation={rotation}>
@@ -71,19 +73,43 @@ function RandomShape({ config }: { config: ShapeConfig }) {
     );
   }
 
-  let radialSegments = 3;
-  if (kind === "penta") radialSegments = 5;
-  if (kind === "hexa") radialSegments = 6;
+  // 三角形 → 三角錐（正四面体）
+  if (kind === "tri") {
+    return (
+      <mesh position={position} rotation={rotation}>
+        {/* TetrahedronGeometry(radius) */}
+        <tetrahedronGeometry args={[size]} />
+        <meshBasicMaterial transparent opacity={0} />
+        <Edges color={color} linewidth={lineWidth} />
+      </mesh>
+    );
+  }
 
-  const height = size * 0.3;
+  // 五角形 → 正十二面体
+  if (kind === "penta") {
+    return (
+      <mesh position={position} rotation={rotation}>
+        {/* DodecahedronGeometry(radius) */}
+        <dodecahedronGeometry args={[size]} />
+        <meshBasicMaterial transparent opacity={0} />
+        <Edges color={color} linewidth={lineWidth} />
+      </mesh>
+    );
+  }
 
-  return (
-    <mesh position={position} rotation={rotation}>
-      <cylinderGeometry args={[size, size, height, radialSegments]} />
-      <meshBasicMaterial transparent opacity={0} />
-      <Edges color={color} linewidth={lineWidth} />
-    </mesh>
-  );
+  // 六角形 → 正二十面体
+  if (kind === "hexa") {
+    return (
+      <mesh position={position} rotation={rotation}>
+        {/* IcosahedronGeometry(radius) */}
+        <icosahedronGeometry args={[size]} />
+        <meshBasicMaterial transparent opacity={0} />
+        <Edges color={color} linewidth={lineWidth} />
+      </mesh>
+    );
+  }
+
+  return null;
 }
 
 // Canvas の中身。useFrame はここで使う
@@ -100,7 +126,7 @@ function Scene() {
 
   // マウント時に 50 個分の図形設定をランダム生成（再レンダーで変わらないよう useMemo）
   const shapes = useMemo<ShapeConfig[]>(() => {
-    const count = 50;
+    const count = 100;
     return Array.from({ length: count }, (_, i) =>
       createRandomShapeConfig(i)
     );
@@ -150,7 +176,7 @@ function App() {
   return (
     <Canvas
       style={{ width: "100vw", height: "100vh", background: "black" }}
-      camera={{ position: [8, 8, 8], fov: 50 }}
+      camera={{ position: [8, 8, 8], fov: 40 }}
     >
       <Scene />
     </Canvas>
